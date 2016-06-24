@@ -14,15 +14,23 @@ public class ClientHandler implements Runnable, Closeable {
 
 	Logger log = LoggerFactory.getLogger(ClientHandler.class);
 
+	private Server server;
+	private String name;
 	private Socket client;
 	private PrintWriter writer;
 	private BufferedReader reader;
 
-	public ClientHandler(Socket client) throws IOException {
+	public ClientHandler(Server server, Socket client) throws IOException {
 		super();
+		this.server = server;
 		this.client = client;
 		this.reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		this.writer = new PrintWriter(client.getOutputStream(), true);
+		
+		writeMessage("****Please enter in a username");
+		this.setName(reader.readLine()); 
+		log.info("{}: Name set to {}", this.client.getRemoteSocketAddress(), name);
+		writeMessage("****Username set to: " + this.name);
 	}
 
 	@Override
@@ -31,18 +39,15 @@ public class ClientHandler implements Runnable, Closeable {
 			log.info("handling client {}", this.client.getRemoteSocketAddress());
 			while (!this.client.isClosed()) {
 				String echo = reader.readLine();
-				log.info("received message [{}] from client {}, echoing...", echo,
-						this.client.getRemoteSocketAddress());
-				Thread.sleep(500);
-				writer.print(echo);
-				writer.flush();
-				Thread.sleep(500);
-				writer.print(echo);
-				writer.flush();
+				log.info("received message [{}] from client {} ({}), echoing...", echo,
+						this.name, this.client.getRemoteSocketAddress());
+				this.server.addLine(echo, this.name);
 			}
+			String timestamp = Server.getCurrentTime();
+			log.info("{} - {}: has disconnected.", timestamp, name);
 			this.close();
-		} catch (IOException | InterruptedException e) {
-			log.error("Handler fail! oh noes :(", e);
+		} catch (IOException e) {
+			log.error("Handler fail for user " + name, e);
 		}
 	}
 
@@ -50,6 +55,19 @@ public class ClientHandler implements Runnable, Closeable {
 	public void close() throws IOException {
 		log.info("closing connection to client {}", this.client.getRemoteSocketAddress());
 		this.client.close();
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void writeMessage(String message) {
+		writer.print(message);
+		writer.flush();
 	}
 
 }
