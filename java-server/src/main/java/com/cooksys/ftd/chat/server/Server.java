@@ -29,7 +29,7 @@ public class Server implements Runnable {
 			while (true) {
 				Socket client = server.accept();
 				log.info("Client connected {}", client.getRemoteSocketAddress());
-				ClientHandler clientHandler = new ClientHandler(client);
+				ClientHandler clientHandler = new ClientHandler(this, client);
 				Thread clientHandlerThread = new Thread(clientHandler);
 				this.handlerThreads.put(clientHandler, clientHandlerThread);
 				clientHandlerThread.start();
@@ -46,6 +46,13 @@ public class Server implements Runnable {
 					log.warn("Failed to close handler :/", e);
 				}
 			}
+		}
+	}
+	
+	public void addLine(String string, String name) {
+		for (ClientHandler clientHandler : this.handlerThreads.keySet()) {
+			String message = "";
+			clientHandler.writeMessage(message);
 		}
 	}
 
