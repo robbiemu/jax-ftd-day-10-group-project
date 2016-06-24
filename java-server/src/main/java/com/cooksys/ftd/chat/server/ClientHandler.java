@@ -44,19 +44,18 @@ public class ClientHandler implements Runnable, Closeable {
 						this.name, this.client.getRemoteSocketAddress());
 				this.server.addLine(echo, this.name, false);
 			}
-			String timestamp = Server.getCurrentTime();
-			log.info("{} - {}: has disconnected.", timestamp, name);
-			this.server.addLine("has disconnected.", this.name, true);
+			log.info("{}: has disconnected.", name);
 			this.close();
 		} catch (IOException e) {
 			this.server.addLine("has disconnected.", this.name, true);
-			log.error("Handler fail for user " + name, e);
+			log.warn("Client is no longer connected. Perhaps he closed out?", e);
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		log.info("closing connection to client {}", this.client.getRemoteSocketAddress());
+		this.server.addLine("has disconnected.", this.name, true);
 		this.client.close();
 	}
 
