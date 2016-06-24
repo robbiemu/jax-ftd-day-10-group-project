@@ -1,9 +1,9 @@
 modify the existing projects such that:
-  * upon connecting, the user must provide a username
-  * any message sent by any connected user must appear on each user's client
-  * the message should be formatted as `${timestamp} - ${user}: ${message}`
-  * the timestamp should be consistent across clients
-  * message order should be consistent across clients
-  * special messages
-    * when a user connects `${timestamp} - ${user} connected`
-    * (optional) when a user disconnects `${timestamp} - ${user} disconnected`
+!  * upon connecting, the user must provide a username
+!  * any message sent by any connected user must appear on each user's client
+!  * the message should be formatted as `${timestamp} - ${user}: ${message}`
+!  * the timestamp should be consistent across clients
+~!  * message order should be consistent across clients
+!  * special messages
+!    * when a user connects `${timestamp} - ${user} connected`
+!    * (optional) when a user disconnects `${timestamp} - ${user} disconnected`
