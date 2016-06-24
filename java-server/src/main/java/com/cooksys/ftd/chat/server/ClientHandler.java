@@ -46,8 +46,10 @@ public class ClientHandler implements Runnable, Closeable {
 			}
 			String timestamp = Server.getCurrentTime();
 			log.info("{} - {}: has disconnected.", timestamp, name);
+			this.server.addLine("has disconnected.", this.name, true);
 			this.close();
 		} catch (IOException e) {
+			this.server.addLine("has disconnected.", this.name, true);
 			log.error("Handler fail for user " + name, e);
 		}
 	}
