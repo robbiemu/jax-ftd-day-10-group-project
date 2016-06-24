@@ -39,24 +39,15 @@ public class ClientHandler implements Runnable, Closeable {
 			log.info("handling client {}", this.client.getRemoteSocketAddress());
 			while (!this.client.isClosed()) {
 				String echo = reader.readLine();
-<<<<<<< Updated upstream
-				log.info("received message [{}] from client {}, echoing...", echo,
-						this.client.getRemoteSocketAddress());
-				Thread.sleep(500);
-				writer.print(echo);
-				writer.flush();
-				Thread.sleep(500);
-				writer.print(echo);
-				writer.flush();
-=======
 				log.info("received message [{}] from client {} ({}), echoing...", echo,
 						this.name, this.client.getRemoteSocketAddress());
 				this.server.addLine(echo, this.name);
->>>>>>> Stashed changes
 			}
+			String timestamp = Server.getCurrentTime();
+			log.info("{} - {}: has disconnected.", timestamp, name);
 			this.close();
-		} catch (IOException | InterruptedException e) {
-			log.error("Handler fail! oh noes :(", e);
+		} catch (IOException e) {
+			log.error("Handler fail for user " + name, e);
 		}
 	}
 

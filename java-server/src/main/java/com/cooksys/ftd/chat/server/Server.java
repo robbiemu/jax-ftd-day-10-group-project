@@ -3,6 +3,7 @@ package com.cooksys.ftd.chat.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,11 +50,19 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public void addLine(String string, String name) {
-		for (ClientHandler clientHandler : this.handlerThreads.keySet()) {
-			String message = "";
-			clientHandler.writeMessage(message);
+	public synchronized void addLine(String message, String name) {
+		String timestamp = getCurrentTime();
+		String broadcast = timestamp + " - " + name + ": " + message;
+		for (ClientHandler clientHandler : this.handlerThreads.keySet()) { // Broadcast message to erryone
+			clientHandler.writeMessage(broadcast);
 		}
 	}
-
+	
+	public static String getCurrentTime() {
+		LocalDateTime current = LocalDateTime.now();
+		String hour = Integer.toString(current.getHour());
+		String min = Integer.toString(current.getMinute());
+		String sec = Integer.toString(current.getSecond());
+		return hour + ":" + min + ":" + sec;
+	}
 }
