@@ -31,6 +31,7 @@ public class ClientHandler implements Runnable, Closeable {
 		this.setName(reader.readLine()); 
 		log.info("{}: Name set to {}", this.client.getRemoteSocketAddress(), name);
 		writeMessage("****Username set to: " + this.name);
+		this.server.addLine("has logged in.", this.name, true);
 	}
 
 	@Override
@@ -39,21 +40,29 @@ public class ClientHandler implements Runnable, Closeable {
 			log.info("handling client {}", this.client.getRemoteSocketAddress());
 			while (!this.client.isClosed()) {
 				String echo = reader.readLine();
-				log.info("received message [{}] from client {} ({}), echoing...", echo,
-						this.name, this.client.getRemoteSocketAddress());
-				this.server.addLine(echo, this.name);
+				if (CommandParser.parseCommand(echo, this)) {
+					log.info("User {} Issued command {}", name, echo);
+				}
+				else {
+					log.info("received message [{}] from client {} ({}), echoing...", echo,
+							this.name, this.client.getRemoteSocketAddress());
+					this.server.addLine(echo, this.name, false);
+				}
 			}
-			String timestamp = Server.getCurrentTime();
-			log.info("{} - {}: has disconnected.", timestamp, name);
+			log.info("{}: has disconnected.", name);
 			this.close();
 		} catch (IOException e) {
-			log.error("Handler fail for user " + name, e);
+			this.server.addLine("has disconnected.", this.name, true);
+			log.warn("Client is no longer connected. Perhaps he closed out?");
+		} catch (InterruptedException e) {
+			log.error("Client command has been interrupted", e);
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		log.info("closing connection to client {}", this.client.getRemoteSocketAddress());
+		this.server.addLine("has disconnected.", this.name, true);
 		this.client.close();
 	}
 
@@ -64,7 +73,11 @@ public class ClientHandler implements Runnable, Closeable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
+	public Socket getSocket() {
+		return this.client;
+	}
+	
 	public void writeMessage(String message) {
 		writer.print(message);
 		writer.flush();
