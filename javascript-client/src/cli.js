@@ -11,7 +11,7 @@ cli
 let server
 
 cli
-  .mode('connect [host] <port>')
+  .mode('connect <port> [host]')
   .delimiter('connected:')
   .init(function (args, callback) {
     server = net.createConnection(args, () => {
