@@ -31,6 +31,7 @@ public class ClientHandler implements Runnable, Closeable {
 		this.setName(reader.readLine()); 
 		log.info("{}: Name set to {}", this.client.getRemoteSocketAddress(), name);
 		writeMessage("****Username set to: " + this.name);
+		this.server.addLine("has logged in.", this.name, true);
 	}
 
 	@Override
@@ -41,7 +42,7 @@ public class ClientHandler implements Runnable, Closeable {
 				String echo = reader.readLine();
 				log.info("received message [{}] from client {} ({}), echoing...", echo,
 						this.name, this.client.getRemoteSocketAddress());
-				this.server.addLine(echo, this.name);
+				this.server.addLine(echo, this.name, false);
 			}
 			String timestamp = Server.getCurrentTime();
 			log.info("{} - {}: has disconnected.", timestamp, name);

@@ -50,9 +50,10 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public synchronized void addLine(String message, String name) {
+	public synchronized void addLine(String message, String name, boolean isStatus) {
 		String timestamp = getCurrentTime();
-		String broadcast = timestamp + " - " + name + ": " + message;
+		String messageDelim = (isStatus) ? " " : ": ";
+		String broadcast = timestamp + " - " + name + messageDelim + message;
 		for (ClientHandler clientHandler : this.handlerThreads.keySet()) { // Broadcast message to erryone
 			clientHandler.writeMessage(broadcast);
 		}
