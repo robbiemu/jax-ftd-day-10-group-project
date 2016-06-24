@@ -3,9 +3,18 @@ import vorpal from 'vorpal'
 
 const cli = vorpal()
 
+import vorpalLogger from 'vorpal-log'
+const chalk = require('chalk')
+
+const LONG_NAME = 'ftd-chat'
+const DEFAULT_DELIMITER = 'ftd-chat~$'
+var ADDRESS = {}
+
 // cli config
-cli
-  .delimiter('ftd-chat~$')
+cli.use(vorpalLogger)
+  .delimiter(DEFAULT_DELIMITER)
+
+const Log = cli.logger
 
 // connect mode
 let server
@@ -15,27 +24,43 @@ cli
   .delimiter('connected:')
   .init(function (args, callback) {
     server = net.createConnection(args, () => {
-      const address = server.address()
-      this.log(`connected to server ${address.address}:${address.port}`)
+      ADDRESS = server.address()
+      Log.log(`connected to server ${ADDRESS.address}:${ADDRESS.port}`)
       callback()
     })
 
     server.on('data', (data) => {
-      this.log(data.toString())
+      if (data.toString().match(/^\*{4}/)) {
+        let out = data.toString().replace(/\*{4}/,"")
+
+        Log.info(chalk.underline.bgBlue(out))
+        if (data.toString().match(/Username set to:/)) {
+          var arr = /Username set to: (.*)$/.exec(data.toString())
+          cli.delimiter(arr[1] + '@' + ADDRESS.address)
+        }
+      } else {
+        Log.log(data.toString())
+      }
     })
 
     server.on('end', () => {
-      this.log('disconnected from server :(')
+      Log.log('server disconnected')
     })
   })
   .action(function (command, callback) {
-    if (command === 'exit') {
-      server.end()
-      callback()
-    } else {
-      server.write(command + '\n')
-      callback()
-    }
+    server.write(command + '\n')
+    callback()
   })
+
+const exit = cli.find('exit')
+if (exit) {
+  Log.log('bingo')
+  exit.description('Exits ' + LONG_NAME)
+  exit._after = function () {
+    // TODO - make this actually happen. _after is not triggering
+    server.end()
+    cli.delimiter(DEFAULT_DELIMITER)
+  }
+}
 
 export default cli
